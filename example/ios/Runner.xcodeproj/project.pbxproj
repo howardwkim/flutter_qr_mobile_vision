@@ -208,7 +208,11 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh",
+<<<<<<< HEAD
 				"${PODS_ROOT}/../../../../../../devtools/flutter/bin/cache/artifacts/engine/ios/Flutter.framework",
+=======
+				"${PODS_ROOT}/../../../../../../development/flutter/bin/cache/artifacts/engine/ios/Flutter.framework",
+>>>>>>> 27344cf... change back to BarcodeScannerOptions
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
