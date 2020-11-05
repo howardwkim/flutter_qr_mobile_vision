@@ -107,8 +107,7 @@ class QrReader: NSObject {
   var previewSize: CMVideoDimensions!
   var textureId: Int64!
   var pixelBuffer : CVPixelBuffer?
-  let barcodeDetector: VisionBarcodeDetector
-  let cameraPosition = AVCaptureDevice.Position.back
+  let barcodeDetector: BarcodeScanner
   let qrCallback: (_:String) -> Void
   
   init(targetWidth: Int, targetHeight: Int, cameraDirection: Int, textureRegistry: FlutterTextureRegistry, options: BarcodeScannerOptions, qrCallback: @escaping (_:String) -> Void) throws {
@@ -124,12 +123,12 @@ class QrReader: NSObject {
     super.init()
     
     captureSession = AVCaptureSession()
-    
+
     if #available(iOS 10.0, *) {
-      captureDevice = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera, for: AVMediaType.video, position: cameraPosition)
+      captureDevice = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera, for: AVMediaType.video, position: cameraDirection)
     } else {
       for device in AVCaptureDevice.devices(for: AVMediaType.video) {
-        if device.position == cameraPosition {
+        if device.position == cameraDirection {
           captureDevice = device
           break
         }
@@ -221,24 +220,27 @@ extension QrReader: AVCaptureVideoDataOutputSampleBufferDelegate {
       }
     }
   }
-  
-  func imageOrientation(
-    deviceOrientation: UIDeviceOrientation,
-    defaultOrientation: UIDeviceOrientation
-  ) -> VisionDetectorImageOrientation {
-    switch deviceOrientation {
-    case .portrait:
-      return cameraPosition == .front ? .leftTop : .rightTop
-    case .landscapeLeft:
-      return cameraPosition == .front ? .bottomLeft : .topLeft
-    case .portraitUpsideDown:
-      return cameraPosition == .front ? .rightBottom : .leftBottom
-    case .landscapeRight:
-      return cameraPosition == .front ? .topRight : .bottomRight
-    case .faceDown, .faceUp, .unknown:
-      fallthrough
-    @unknown default:
-      return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+    
+    
+
+    func imageOrientation(
+      deviceOrientation: UIDeviceOrientation,
+      defaultOrientation: UIDeviceOrientation
+    ) -> UIImage.Orientation {
+      switch deviceOrientation {
+      case .portrait:
+        return cameraDirection == .front ? .leftMirrored : .right
+      case .landscapeLeft:
+        return cameraDirection == .front ? .downMirrored : .up
+      case .portraitUpsideDown:
+        return cameraDirection == .front ? .rightMirrored : .left
+      case .landscapeRight:
+        return cameraDirection == .front ? .upMirrored : .down
+      case .faceDown, .faceUp, .unknown:
+        return .up
+      @unknown default:
+        return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+        }
     }
   }
 }
