@@ -4,7 +4,7 @@ import FirebaseMLVision
 import os.log
 
 
-extension VisionBarcodeDetectorOptions {
+extension BarcodeScannerOptions {
   convenience init(formatStrings: [String]) {
     let formats = formatStrings.map { (format) -> VisionBarcodeFormat? in
       switch format  {
