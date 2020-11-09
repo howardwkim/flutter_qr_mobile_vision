@@ -24,7 +24,8 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.google.mlkit.vision.common.InputImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -102,19 +103,19 @@ class QrCameraC2 implements QrCamera {
         int result;
         switch (rotationCompensation) {
             case 0:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 break;
             case 90:
-                result = Surface.ROTATION_90;
+                result = FirebaseVisionImageMetadata.ROTATION_90;
                 break;
             case 180:
-                result = Surface.ROTATION_180;
+                result = FirebaseVisionImageMetadata.ROTATION_180;
                 break;
             case 270:
-                result = Surface.ROTATION_270;
+                result = FirebaseVisionImageMetadata.ROTATION_270;
                 break;
             default:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 Log.e(TAG, "Bad rotation value: " + rotationCompensation);
         }
         return result;
@@ -212,8 +213,8 @@ class QrCameraC2 implements QrCamera {
         }
 
         @Override
-        public InputImage toImage() {
-            return InputImage.fromMediaImage(image, firebaseOrientation);
+        public FirebaseVisionImage toImage() {
+            return FirebaseVisionImage.fromMediaImage(image, firebaseOrientation);
         }
 
         @Override

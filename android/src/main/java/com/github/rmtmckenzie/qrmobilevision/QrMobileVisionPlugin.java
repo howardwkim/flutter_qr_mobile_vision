@@ -8,8 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
-
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetectorOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -160,7 +159,6 @@ public class QrMobileVisionPlugin implements MethodCallHandler, QrReaderCallback
                     lastHeartbeatTimeout = methodCall.argument("heartbeatTimeout");
                     Integer targetWidth = methodCall.argument("targetWidth");
                     Integer targetHeight = methodCall.argument("targetHeight");
-                    Integer cameraDirection = methodCall.argument("cameraDirection");
                     List<String> formatStrings = methodCall.argument("formats");
 
                     if (targetWidth == null || targetHeight == null) {
@@ -168,7 +166,7 @@ public class QrMobileVisionPlugin implements MethodCallHandler, QrReaderCallback
                         break;
                     }
 
-                    BarcodeScannerOptions options = BarcodeFormats.optionsFromStringList(formatStrings);
+                    FirebaseVisionBarcodeDetectorOptions options = BarcodeFormats.optionsFromStringList(formatStrings);
 
                     TextureRegistry.SurfaceTextureEntry textureEntry = textures.createSurfaceTexture();
                     QrReader reader = new QrReader(targetWidth, targetHeight, activity, options,
@@ -177,8 +175,7 @@ public class QrMobileVisionPlugin implements MethodCallHandler, QrReaderCallback
                     readingInstance = new ReadingInstance(reader, textureEntry, result);
                     try {
                         reader.start(
-                            lastHeartbeatTimeout == null ? 0 : lastHeartbeatTimeout,
-                            cameraDirection == null ? 0 : cameraDirection
+                            lastHeartbeatTimeout == null ? 0 : lastHeartbeatTimeout
                         );
                     } catch (IOException e) {
                         e.printStackTrace();

@@ -10,7 +10,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.google.android.gms.vision.CameraSource;
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetectorOptions;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ class QrReader {
     private Heartbeat heartbeat;
     private CameraSource camera;
 
-    QrReader(int width, int height, Activity context, BarcodeScannerOptions options,
+    QrReader(int width, int height, Activity context, FirebaseVisionBarcodeDetectorOptions options,
              final QRReaderStartedCallback startedCallback, final QrReaderCallbacks communicator,
              final SurfaceTexture texture) {
         this.context = context;
@@ -37,7 +37,7 @@ class QrReader {
         }
     }
 
-    void start(final int heartBeatTimeout, final int cameraDirection) throws IOException, NoPermissionException, Exception {
+    void start(final int heartBeatTimeout) throws IOException, NoPermissionException, Exception {
         if (!hasCameraHardware(context)) {
             throw new Exception(Exception.Reason.noHardware);
         }
@@ -45,11 +45,11 @@ class QrReader {
         if (!checkCameraPermission(context)) {
             throw new NoPermissionException();
         } else {
-            continueStarting(heartBeatTimeout, cameraDirection);
+            continueStarting(heartBeatTimeout);
         }
     }
 
-    private void continueStarting(int heartBeatTimeout, final int cameraDirection) throws IOException {
+    private void continueStarting(int heartBeatTimeout) throws IOException {
         try {
             if (heartBeatTimeout > 0) {
                 if (heartbeat != null) {
@@ -63,7 +63,7 @@ class QrReader {
                 });
             }
 
-            qrCamera.start(cameraDirection);
+            qrCamera.start();
             startedCallback.started();
         } catch (Throwable t) {
             startedCallback.startingFailed(t);
