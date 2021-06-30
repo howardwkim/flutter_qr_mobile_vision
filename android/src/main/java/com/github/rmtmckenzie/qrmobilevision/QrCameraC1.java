@@ -9,7 +9,8 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.WindowManager;
 
-import com.google.mlkit.vision.common.InputImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,7 +49,6 @@ class QrCameraC1 implements QrCamera {
         this.context = context;
     }
 
-
     private int getFirebaseOrientation() {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         int deviceRotation = windowManager.getDefaultDisplay().getRotation();
@@ -58,31 +58,30 @@ class QrCameraC1 implements QrCamera {
         int result;
         switch (rotationCompensation) {
             case 0:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 break;
             case 90:
-                result = Surface.ROTATION_90;
+                result = FirebaseVisionImageMetadata.ROTATION_90;
                 break;
             case 180:
-                result = Surface.ROTATION_180;
+                result = FirebaseVisionImageMetadata.ROTATION_180;
                 break;
             case 270:
-                result = Surface.ROTATION_270;
+                result = FirebaseVisionImageMetadata.ROTATION_270;
                 break;
             default:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 Log.e(TAG, "Bad rotation value: " + rotationCompensation);
         }
         return result;
     }
-
     @Override
-    public void start() throws QrReader.Exception {
+    public void start(final int cameraDirection) throws QrReader.Exception {
         int numberOfCameras = android.hardware.Camera.getNumberOfCameras();
         info = new android.hardware.Camera.CameraInfo();
         for (int i = 0; i < numberOfCameras; i++) {
             android.hardware.Camera.getCameraInfo(i, info);
-            if (info.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK) {
+            if (info.facing == (cameraDirection == 0 ? android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT : android.hardware.Camera.CameraInfo.CAMERA_FACING_BACK)) {
                 camera = android.hardware.Camera.open(i);
                 break;
             }
@@ -118,8 +117,12 @@ class QrCameraC1 implements QrCamera {
 
                     if (data != null) {
 
-                        QrDetector.Frame frame = new Frame(data,
-                            previewSize.width, previewSize.height, getFirebaseOrientation(), IMAGEFORMAT);
+                        QrDetector.Frame frame = new Frame(data, new FirebaseVisionImageMetadata.Builder()
+                            .setFormat(IMAGEFORMAT)
+                            .setWidth(previewSize.width)
+                            .setHeight(previewSize.height)
+                            .setRotation(getFirebaseOrientation())
+                            .build());
 
                         detector.detect(frame);
                     } else {
@@ -143,23 +146,16 @@ class QrCameraC1 implements QrCamera {
 
     static class Frame implements QrDetector.Frame {
         private byte[] data;
-        private final int imageFormat;
-        private final int width;
-        private final int height;
-        private final int rotationDegrees;
+        private final FirebaseVisionImageMetadata metadata;
 
-        Frame(byte[] data, int width, int height, int rotationDegrees, int imageFormat) {
+        Frame(byte[] data, FirebaseVisionImageMetadata metadata) {
             this.data = data;
-            this.width = width;
-            this.height = height;
-            this.rotationDegrees = rotationDegrees;
-            this.imageFormat = imageFormat;
+            this.metadata = metadata;
         }
 
         @Override
-        public InputImage toImage() {
-            //fromByteArray(byte[] byteArray, int width, int height, int rotationDegrees, int format)
-            return InputImage.fromByteArray(data, width, height, rotationDegrees, imageFormat);
+        public FirebaseVisionImage toImage() {
+            return FirebaseVisionImage.fromByteArray(data, metadata);
         }
 
         @Override

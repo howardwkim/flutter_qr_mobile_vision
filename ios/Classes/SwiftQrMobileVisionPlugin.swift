@@ -1,4 +1,5 @@
 import Flutter
+import AVFoundation
 import UIKit
 import MLKitVision
 import MLKitBarcodeScanning
@@ -57,6 +58,7 @@ public class SwiftQrMobileVisionPlugin: NSObject, FlutterPlugin {
       
       guard let targetWidth = argReader.int(key: "targetWidth"),
             let targetHeight = argReader.int(key: "targetHeight"),
+            let cameraDirection = argReader.int(key: "cameraDirection"),
             let formatStrings = argReader.stringArray(key: "formats") else {
           result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing a required argument", details: "Expecting targetWidth, targetHeight, formats, and optionally heartbeatTimeout"))
           return
@@ -68,6 +70,7 @@ public class SwiftQrMobileVisionPlugin: NSObject, FlutterPlugin {
         reader = try QrReader(
           targetWidth: targetWidth,
           targetHeight: targetHeight,
+          cameraDirection:  AVCaptureDevice.Position(rawValue: cameraDirection == AVCaptureDevice.Position.back.rawValue ? AVCaptureDevice.Position.back.rawValue : AVCaptureDevice.Position.front.rawValue) ?? AVCaptureDevice.Position.back,
           textureRegistry: textureRegistry,
           options: options) { [unowned self] qr in
             self.channel.invokeMethod("qrRead", arguments: qr)

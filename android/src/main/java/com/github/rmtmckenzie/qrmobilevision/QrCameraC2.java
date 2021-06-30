@@ -24,7 +24,8 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.google.mlkit.vision.common.InputImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import java.util.List;
 import static android.hardware.camera2.CameraMetadata.CONTROL_AF_MODE_AUTO;
 import static android.hardware.camera2.CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
 import static android.hardware.camera2.CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+import static android.hardware.camera2.CameraMetadata.LENS_FACING_FRONT;
 import static android.hardware.camera2.CameraMetadata.LENS_FACING_BACK;
 
 /**
@@ -101,26 +103,26 @@ class QrCameraC2 implements QrCamera {
         int result;
         switch (rotationCompensation) {
             case 0:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 break;
             case 90:
-                result = Surface.ROTATION_90;
+                result = FirebaseVisionImageMetadata.ROTATION_90;
                 break;
             case 180:
-                result = Surface.ROTATION_180;
+                result = FirebaseVisionImageMetadata.ROTATION_180;
                 break;
             case 270:
-                result = Surface.ROTATION_270;
+                result = FirebaseVisionImageMetadata.ROTATION_270;
                 break;
             default:
-                result = Surface.ROTATION_0;
+                result = FirebaseVisionImageMetadata.ROTATION_0;
                 Log.e(TAG, "Bad rotation value: " + rotationCompensation);
         }
         return result;
     }
 
     @Override
-    public void start() throws QrReader.Exception {
+    public void start(final int cameraDirection) throws QrReader.Exception {
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
 
         if (manager == null) {
@@ -133,7 +135,7 @@ class QrCameraC2 implements QrCamera {
             for (String id : cameraIdList) {
                 CameraCharacteristics cameraCharacteristics = manager.getCameraCharacteristics(id);
                 Integer integer = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
-                if (integer != null && integer == LENS_FACING_BACK) {
+                if (integer != null && integer == (cameraDirection == 0 ? LENS_FACING_FRONT : LENS_FACING_BACK)) {
                     cameraId = id;
                     break;
                 }
@@ -211,8 +213,8 @@ class QrCameraC2 implements QrCamera {
         }
 
         @Override
-        public InputImage toImage() {
-            return InputImage.fromMediaImage(image, firebaseOrientation);
+        public FirebaseVisionImage toImage() {
+            return FirebaseVisionImage.fromMediaImage(image, firebaseOrientation);
         }
 
         @Override

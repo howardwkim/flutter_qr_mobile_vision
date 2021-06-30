@@ -107,27 +107,28 @@ class QrReader: NSObject {
   var previewSize: CMVideoDimensions!
   var textureId: Int64!
   var pixelBuffer : CVPixelBuffer?
+  let position: AVCaptureDevice.Position
   let barcodeDetector: BarcodeScanner
-  let cameraPosition = AVCaptureDevice.Position.back
   let qrCallback: (_:String) -> Void
   
-  init(targetWidth: Int, targetHeight: Int, textureRegistry: FlutterTextureRegistry, options: VisionBarcodeDetectorOptions, qrCallback: @escaping (_:String) -> Void) throws {
+  init(targetWidth: Int, targetHeight: Int, cameraDirection: AVCaptureDevice.Position, textureRegistry: FlutterTextureRegistry, options: BarcodeScannerOptions, qrCallback: @escaping (_:String) -> Void) throws {
     self.targetWidth = targetWidth
     self.targetHeight = targetHeight
     self.textureRegistry = textureRegistry
     self.qrCallback = qrCallback
     
+    self.position = cameraDirection
     self.barcodeDetector = BarcodeScanner.barcodeScanner()
-    
     super.init()
     
     captureSession = AVCaptureSession()
     
+    
     if #available(iOS 10.0, *) {
-      captureDevice = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera, for: AVMediaType.video, position: cameraPosition)
+        captureDevice = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera, for: AVMediaType.video, position: position)
     } else {
       for device in AVCaptureDevice.devices(for: AVMediaType.video) {
-        if device.position == cameraPosition {
+        if device.position == cameraDirection {
           captureDevice = device
           break
         }
@@ -224,13 +225,13 @@ extension QrReader: AVCaptureVideoDataOutputSampleBufferDelegate {
     ) -> UIImage.Orientation {
       switch deviceOrientation {
       case .portrait:
-        return cameraPosition == .front ? .leftMirrored : .right
+        return position == .front ? .leftMirrored : .right
       case .landscapeLeft:
-        return cameraPosition == .front ? .downMirrored : .up
+        return position == .front ? .downMirrored : .up
       case .portraitUpsideDown:
-        return cameraPosition == .front ? .rightMirrored : .left
+        return position == .front ? .rightMirrored : .left
       case .landscapeRight:
-        return cameraPosition == .front ? .upMirrored : .down
+        return position == .front ? .upMirrored : .down
       case .faceDown, .faceUp, .unknown:
         return .up
       @unknown default:
